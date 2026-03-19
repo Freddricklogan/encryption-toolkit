@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryption Toolkit</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a192f;--bg2:#112240;--bg3:#1d3461;--accent:#64ffda;--accent2:#00bcd4;--text:#ccd6f6;--text2:#8892b0;--danger:#ef4444;--success:#10b981;--warning:#f59e0b;--purple:#a855f7;--radius:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--bg2),var(--bg3));padding:24px 32px;border-bottom:1px solid rgba(100,255,218,.1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.6rem;font-weight:700;color:#fff}
+.header h1 span{color:var(--accent)}
+.header p{color:var(--text2);font-size:.85rem}
+.badge{background:rgba(100,255,218,.1);color:var(--accent);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600}
+.tabs{display:flex;gap:4px;padding:12px 32px;background:var(--bg2);overflow-x:auto;flex-wrap:nowrap}
+.tab{padding:10px 18px;background:transparent;border:1px solid transparent;border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:.85rem;font-weight:500;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--accent);background:rgba(100,255,218,.05)}
+.tab.active{background:rgba(100,255,218,.1);color:var(--accent);border-color:rgba(100,255,218,.2)}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.panel{display:none;animation:fadeIn .3s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--bg2);border:1px solid rgba(100,255,218,.08);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card h2{font-size:1.1rem;color:#fff;margin-bottom:6px}
+.card h3{font-size:.95rem;color:var(--accent);margin:16px 0 8px}
+.card p.desc{color:var(--text2);font-size:.85rem;margin-bottom:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:768px){.row{grid-template-columns:1fr}}
+label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:4px;font-weight:500}
+textarea,input[type=text],input[type=password],input[type=number],input[type=file],select{width:100%;padding:10px 14px;background:var(--bg);border:1px solid rgba(100,255,218,.15);border-radius:var(--radius);color:var(--text);font-family:monospace;font-size:.85rem;resize:vertical;outline:none;transition:border .2s}
+textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+textarea{min-height:100px}
+.btn{padding:10px 20px;border:none;border-radius:var(--radius);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:#50e6c2;transform:translateY(-1px)}
+.btn-secondary{background:rgba(100,255,218,.1);color:var(--accent);border:1px solid rgba(100,255,218,.2)}
+.btn-secondary:hover{background:rgba(100,255,218,.15)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
+.btn-group{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.output-box{background:var(--bg);border:1px solid rgba(100,255,218,.1);border-radius:var(--radius);padding:14px;margin-top:12px;font-family:monospace;font-size:.82rem;word-break:break-all;max-height:200px;overflow-y:auto;color:var(--accent);white-space:pre-wrap}
+.output-box.error{color:var(--danger);border-color:rgba(239,68,68,.2)}
+.strength-bar{height:8px;border-radius:4px;background:var(--bg);margin-top:8px;overflow:hidden}
+.strength-fill{height:100%;border-radius:4px;transition:width .3s,background .3s}
+.strength-label{display:flex;justify-content:space-between;margin-top:6px;font-size:.8rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+.metric{background:var(--bg);border:1px solid rgba(100,255,218,.08);border-radius:var(--radius);padding:14px;text-align:center}
+.metric .val{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.metric .lbl{font-size:.75rem;color:var(--text2);margin-top:4px}
+.key-display{background:var(--bg);border:1px solid rgba(100,255,218,.1);border-radius:var(--radius);padding:12px;margin-top:8px;font-family:monospace;font-size:.75rem;word-break:break-all;max-height:150px;overflow-y:auto;color:var(--text2)}
+.info-banner{background:rgba(100,255,218,.05);border:1px solid rgba(100,255,218,.15);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:.82rem;color:var(--text2)}
+.info-banner strong{color:var(--accent)}
+.chart-container{position:relative;height:300px;margin-top:16px}
+.steg-canvas{border:1px solid rgba(100,255,218,.15);border-radius:var(--radius);margin-top:8px;max-width:100%}
+.algo-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.82rem}
+.algo-table th,.algo-table td{padding:10px 14px;text-align:left;border-bottom:1px solid rgba(100,255,218,.08)}
+.algo-table th{color:var(--accent);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px}
+.algo-table td{color:var(--text)}
+.copy-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:4px 8px;opacity:.7;transition:opacity .2s}
+.copy-btn:hover{opacity:1}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.7rem;font-weight:600}
+.tag-green{background:rgba(16,185,129,.15);color:var(--success)}
+.tag-yellow{background:rgba(245,158,11,.15);color:var(--warning)}
+.tag-red{background:rgba(239,68,68,.15);color:var(--danger)}
+.tag-purple{background:rgba(168,85,247,.15);color:var(--purple)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1><span>&#x1f512;</span> Encryption <span>Toolkit</span></h1>
+    <p>Applied cryptography powered by the Web Crypto API</p>
+  </div>
+  <span class="badge">All Processing Local</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-panel="aes">AES-256</button>
+  <button class="tab" data-panel="rsa">RSA</button>
+  <button class="tab" data-panel="hash">Hashing</button>
+  <button class="tab" data-panel="hmac">HMAC</button>
+  <button class="tab" data-panel="sign">Signatures</button>
+  <button class="tab" data-panel="password">Password Analyzer</button>
+  <button class="tab" data-panel="benchmark">Benchmarks</button>
+  <button class="tab" data-panel="steg">Steganography</button>
+</div>
+
+<div class="container">
+
+<!-- AES Panel -->
+<div class="panel active" id="panel-aes">
+  <div class="card">
+    <h2>AES-256-GCM Encryption</h2>
+    <p class="desc">Symmetric encryption using the Advanced Encryption Standard with Galois/Counter Mode for authenticated encryption.</p>
+    <div class="row">
+      <div>
+        <label>Plaintext</label>
+        <textarea id="aes-plaintext" placeholder="Enter text to encrypt..."></textarea>
+        <label style="margin-top:12px">Passphrase</label>
+        <input type="password" id="aes-pass" placeholder="Enter a strong passphrase">
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="aesEncrypt()">Encrypt</button>
+          <button class="btn btn-secondary" onclick="aesDecrypt()">Decrypt</button>
+        </div>
+      </div>
+      <div>
+        <label>Output <button class="copy-btn" onclick="copyText('aes-output')">Copy</button></label>
+        <div class="output-box" id="aes-output">Output will appear here...</div>
+        <div class="metric-grid" style="margin-top:16px">
+          <div class="metric"><div class="val" id="aes-algo">AES-256-GCM</div><div class="lbl">Algorithm</div></div>
+          <div class="metric"><div class="val" id="aes-keylen">256-bit</div><div class="lbl">Key Length</div></div>
+          <div class="metric"><div class="val" id="aes-time">—</div><div class="lbl">Time (ms)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>How AES-GCM Works</h2>
+    <table class="algo-table">
+      <tr><th>Property</th><th>Value</th></tr>
+      <tr><td>Type</td><td>Symmetric Block Cipher</td></tr>
+      <tr><td>Key Size</td><td>256 bits (derived via PBKDF2)</td></tr>
+      <tr><td>Block Size</td><td>128 bits</td></tr>
+      <tr><td>Mode</td><td>Galois/Counter Mode (authenticated)</td></tr>
+      <tr><td>IV Size</td><td>96 bits (random per encryption)</td></tr>
+      <tr><td>Auth Tag</td><td>128 bits (integrity verification)</td></tr>
+      <tr><td>Key Derivation</td><td>PBKDF2 with 100,000 iterations + random salt</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- RSA Panel -->
+<div class="panel" id="panel-rsa">
+  <div class="card">
+    <h2>RSA-OAEP Encryption</h2>
+    <p class="desc">Asymmetric encryption using RSA with Optimal Asymmetric Encryption Padding.</p>
+    <div class="btn-group" style="margin-bottom:16px">
+      <button class="btn btn-primary" onclick="rsaGenerate()">Generate Key Pair</button>
+      <select id="rsa-bits" style="width:auto;padding:8px 12px">
+        <option value="2048">2048-bit</option>
+        <option value="4096">4096-bit</option>
+      </select>
+    </div>
+    <div class="row">
+      <div>
+        <label>Public Key</label>
+        <div class="key-display" id="rsa-pub">Generate a key pair to begin...</div>
+        <label style="margin-top:12px">Plaintext</label>
+        <textarea id="rsa-plaintext" placeholder="Enter text to encrypt (limited by key size)..." rows="3"></textarea>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="rsaEncrypt()">Encrypt with Public Key</button>
+          <button class="btn btn-secondary" onclick="rsaDecrypt()">Decrypt with Private Key</button>
+        </div>
+      </div>
+      <div>
+        <label>Private Key</label>
+        <div class="key-display" id="rsa-priv">Generate a key pair to begin...</div>
+        <label style="margin-top:12px">Output <button class="copy-btn" onclick="copyText('rsa-output')">Copy</button></label>
+        <div class="output-box" id="rsa-output">Output will appear here...</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="val" id="rsa-keygen-time">—</div><div class="lbl">Key Gen Time (ms)</div></div>
+      <div class="metric"><div class="val" id="rsa-enc-time">—</div><div class="lbl">Encrypt Time (ms)</div></div>
+      <div class="metric"><div class="val" id="rsa-key-size">—</div><div class="lbl">Key Size</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hashing Panel -->
+<div class="panel" id="panel-hash">
+  <div class="card">
+    <h2>Cryptographic Hashing</h2>
+    <p class="desc">One-way hash functions for data integrity verification and fingerprinting.</p>
+    <div class="row">
+      <div>
+        <label>Input Text</label>
+        <textarea id="hash-input" placeholder="Enter text to hash..." oninput="hashLive()"></textarea>
+        <label style="margin-top:12px">Salt (optional)</label>
+        <input type="text" id="hash-salt" placeholder="Optional salt value" oninput="hashLive()">
+        <label style="margin-top:12px">Algorithm</label>
+        <select id="hash-algo" onchange="hashLive()">
+          <option value="SHA-256">SHA-256</option>
+          <option value="SHA-384">SHA-384</option>
+          <option value="SHA-512">SHA-512</option>
+          <option value="SHA-1">SHA-1 (deprecated)</option>
+        </select>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="hashLive()">Hash</button>
+          <button class="btn btn-secondary" onclick="hashFile()">Hash File</button>
+          <input type="file" id="hash-file-input" style="display:none" onchange="hashFileSelected()">
+        </div>
+      </div>
+      <div>
+        <label>Hash Output <button class="copy-btn" onclick="copyText('hash-output')">Copy</button></label>
+        <div class="output-box" id="hash-output">Hash will appear here...</div>
+        <div class="metric-grid">
+          <div class="metric"><div class="val" id="hash-bits">—</div><div class="lbl">Output Bits</div></div>
+          <div class="metric"><div class="val" id="hash-hex-len">—</div><div class="lbl">Hex Characters</div></div>
+          <div class="metric"><div class="val" id="hash-time">—</div><div class="lbl">Time (ms)</div></div>
+        </div>
+        <h3>Hash Comparison</h3>
+        <label>Expected Hash</label>
+        <input type="text" id="hash-compare" placeholder="Paste expected hash to compare" oninput="compareHash()">
+        <div class="output-box" id="hash-match" style="margin-top:8px">Enter a hash above to compare...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HMAC Panel -->
+<div class="panel" id="panel-hmac">
+  <div class="card">
+    <h2>HMAC — Hash-Based Message Authentication</h2>
+    <p class="desc">Verify data integrity and authenticity using a shared secret key with a cryptographic hash function.</p>
+    <div class="row">
+      <div>
+        <label>Message</label>
+        <textarea id="hmac-msg" placeholder="Enter message..."></textarea>
+        <label style="margin-top:12px">Secret Key</label>
+        <input type="password" id="hmac-key" placeholder="Shared secret key">
+        <label style="margin-top:12px">Algorithm</label>
+        <select id="hmac-algo">
+          <option value="SHA-256">HMAC-SHA-256</option>
+          <option value="SHA-384">HMAC-SHA-384</option>
+          <option value="SHA-512">HMAC-SHA-512</option>
+        </select>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="hmacGenerate()">Generate HMAC</button>
+          <button class="btn btn-secondary" onclick="hmacVerify()">Verify HMAC</button>
+        </div>
+      </div>
+      <div>
+        <label>HMAC Output <button class="copy-btn" onclick="copyText('hmac-output')">Copy</button></label>
+        <div class="output-box" id="hmac-output">HMAC will appear here...</div>
+        <h3>Verification</h3>
+        <label>Expected HMAC</label>
+        <input type="text" id="hmac-expected" placeholder="Paste HMAC to verify against">
+        <div class="output-box" id="hmac-verify-result" style="margin-top:8px">Enter an HMAC above and click Verify...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Digital Signatures Panel -->
+<div class="panel" id="panel-sign">
+  <div class="card">
+    <h2>Digital Signatures (RSA-PSS)</h2>
+    <p class="desc">Create and verify digital signatures to ensure document authenticity and non-repudiation.</p>
+    <div class="btn-group" style="margin-bottom:16px">
+      <button class="btn btn-primary" onclick="signGenKeys()">Generate Signing Key Pair</button>
+    </div>
+    <div class="row">
+      <div>
+        <label>Signing Key (Private)</label>
+        <div class="key-display" id="sign-priv-key">Generate keys to begin...</div>
+        <label style="margin-top:12px">Document / Message</label>
+        <textarea id="sign-message" placeholder="Enter the message to sign..."></textarea>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="signMessage()">Sign Message</button>
+        </div>
+      </div>
+      <div>
+        <label>Verification Key (Public)</label>
+        <div class="key-display" id="sign-pub-key">Generate keys to begin...</div>
+        <label style="margin-top:12px">Signature <button class="copy-btn" onclick="copyText('sign-signature')">Copy</button></label>
+        <div class="output-box" id="sign-signature">Signature will appear here...</div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="verifySignature()">Verify Signature</button>
+        </div>
+        <div class="output-box" id="sign-verify-result" style="margin-top:8px">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Analyzer Panel -->
+<div class="panel" id="panel-password">
+  <div class="card">
+    <h2>Password Strength Analyzer</h2>
+    <p class="desc">Evaluate password strength through entropy calculation, pattern detection, and crack time estimation.</p>
+    <label>Password</label>
+    <input type="text" id="pw-input" placeholder="Enter a password to analyze..." oninput="analyzePassword()" autocomplete="off">
+    <div class="strength-bar"><div class="strength-fill" id="pw-bar"></div></div>
+    <div class="strength-label">
+      <span id="pw-label" style="color:var(--text2)">Enter a password</span>
+      <span id="pw-score-text" style="color:var(--text2)">—</span>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="val" id="pw-entropy">0</div><div class="lbl">Entropy (bits)</div></div>
+      <div class="metric"><div class="val" id="pw-charset">0</div><div class="lbl">Charset Size</div></div>
+      <div class="metric"><div class="val" id="pw-crack-online">—</div><div class="lbl">Online Attack</div></div>
+      <div class="metric"><div class="val" id="pw-crack-offline">—</div><div class="lbl">Offline (GPU)</div></div>
+      <div class="metric"><div class="val" id="pw-length">0</div><div class="lbl">Length</div></div>
+      <div class="metric"><div class="val" id="pw-patterns">—</div><div class="lbl">Patterns Found</div></div>
+    </div>
+    <h3>Analysis Details</h3>
+    <div class="output-box" id="pw-details">Enter a password above for detailed analysis...</div>
+  </div>
+  <div class="card">
+    <h2>Password Generator</h2>
+    <div class="row">
+      <div>
+        <label>Length: <span id="gen-len-val">20</span></label>
+        <input type="range" id="gen-len" min="8" max="64" value="20" oninput="document.getElementById('gen-len-val').textContent=this.value" style="width:100%;accent-color:var(--accent)">
+        <div style="margin-top:8px">
+          <label><input type="checkbox" id="gen-upper" checked> Uppercase (A-Z)</label>
+          <label><input type="checkbox" id="gen-lower" checked> Lowercase (a-z)</label>
+          <label><input type="checkbox" id="gen-digits" checked> Digits (0-9)</label>
+          <label><input type="checkbox" id="gen-symbols" checked> Symbols (!@#$...)</label>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="generatePassword()">Generate Password</button>
+        </div>
+      </div>
+      <div>
+        <label>Generated Password <button class="copy-btn" onclick="copyText('gen-output')">Copy</button></label>
+        <div class="output-box" id="gen-output" style="font-size:1.1rem;letter-spacing:1px">Click Generate...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Benchmarks Panel -->
+<div class="panel" id="panel-benchmark">
+  <div class="card">
+    <h2>Algorithm Benchmarks</h2>
+    <p class="desc">Compare performance of cryptographic algorithms in your browser's Web Crypto implementation.</p>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="runBenchmarks()">Run All Benchmarks</button>
+    </div>
+    <div class="chart-container"><canvas id="bench-chart"></canvas></div>
+    <div id="bench-results" style="margin-top:16px"></div>
+  </div>
+  <div class="card">
+    <h2>Algorithm Comparison</h2>
+    <table class="algo-table">
+      <tr><th>Algorithm</th><th>Type</th><th>Key Size</th><th>Speed</th><th>Best For</th></tr>
+      <tr><td>AES-256-GCM</td><td><span class="tag tag-green">Symmetric</span></td><td>256-bit</td><td>Very Fast</td><td>Bulk data encryption</td></tr>
+      <tr><td>RSA-OAEP</td><td><span class="tag tag-purple">Asymmetric</span></td><td>2048/4096-bit</td><td>Slow</td><td>Key exchange, small data</td></tr>
+      <tr><td>SHA-256</td><td><span class="tag tag-yellow">Hash</span></td><td>N/A</td><td>Fast</td><td>Integrity, signatures</td></tr>
+      <tr><td>SHA-512</td><td><span class="tag tag-yellow">Hash</span></td><td>N/A</td><td>Fast</td><td>High-security hashing</td></tr>
+      <tr><td>HMAC-SHA-256</td><td><span class="tag tag-green">MAC</span></td><td>Variable</td><td>Fast</td><td>Message authentication</td></tr>
+      <tr><td>RSA-PSS</td><td><span class="tag tag-purple">Signature</span></td><td>2048-bit</td><td>Slow</td><td>Digital signatures</td></tr>
+      <tr><td>PBKDF2</td><td><span class="tag tag-red">KDF</span></td><td>Variable</td><td>Intentionally Slow</td><td>Password-based keys</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Steganography Panel -->
+<div class="panel" id="panel-steg">
+  <div class="card">
+    <h2>Steganography — Hide Text in Images</h2>
+    <p class="desc">Embed hidden messages within image pixels using Least Significant Bit (LSB) encoding. The visual difference is imperceptible to the human eye.</p>
+    <div class="info-banner"><strong>How it works:</strong> Each character is encoded into the least significant bits of pixel color values. The image looks unchanged, but carries a hidden payload.</div>
+    <div class="row">
+      <div>
+        <label>Secret Message</label>
+        <textarea id="steg-message" placeholder="Enter a secret message to hide..." rows="3"></textarea>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="stegEncode()">Hide Message in Image</button>
+          <button class="btn btn-secondary" onclick="stegDecode()">Extract Hidden Message</button>
+        </div>
+        <label style="margin-top:12px">Extracted Message</label>
+        <div class="output-box" id="steg-extracted">Hidden message will appear here after extraction...</div>
+      </div>
+      <div>
+        <label>Carrier Image (256x256)</label>
+        <canvas id="steg-canvas" class="steg-canvas" width="256" height="256"></canvas>
+        <div class="metric-grid">
+          <div class="metric"><div class="val" id="steg-capacity">0</div><div class="lbl">Capacity (chars)</div></div>
+          <div class="metric"><div class="val" id="steg-used">0</div><div class="lbl">Used (chars)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Tab navigation
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+// Utility functions
+function buf2hex(buffer) {
+  return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function hex2buf(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+  return bytes;
+}
+function buf2base64(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+function base642buf(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const orig = el.style.borderColor;
+    el.style.borderColor = 'var(--success)';
+    setTimeout(() => el.style.borderColor = orig, 800);
+  });
+}
+function setOutput(id, text, isError = false) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.classList.toggle('error', isError);
+}
+
+// ========== AES-256-GCM ==========
+async function deriveKey(passphrase, salt) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function aesEncrypt() {
+  const plaintext = document.getElementById('aes-plaintext').value;
+  const passphrase = document.getElementById('aes-pass').value;
+  if (!plaintext || !passphrase) return setOutput('aes-output', 'Please enter both plaintext and passphrase.', true);
+  try {
+    const t0 = performance.now();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKey(passphrase, salt);
+    const enc = new TextEncoder();
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
+    const result = buf2base64(salt) + '.' + buf2base64(iv) + '.' + buf2base64(ciphertext);
+    const elapsed = (performance.now() - t0).toFixed(2);
+    setOutput('aes-output', result);
+    document.getElementById('aes-time').textContent = elapsed;
+  } catch (e) {
+    setOutput('aes-output', 'Encryption error: ' + e.message, true);
+  }
+}
+
+async function aesDecrypt() {
+  const ciphertext = document.getElementById('aes-plaintext').value || document.getElementById('aes-output').textContent;
+  const passphrase = document.getElementById('aes-pass').value;
+  if (!ciphertext || !passphrase) return setOutput('aes-output', 'Please enter ciphertext and passphrase.', true);
+  try {
+    const t0 = performance.now();
+    const parts = ciphertext.split('.');
+    if (parts.length !== 3) throw new Error('Invalid ciphertext format. Expected salt.iv.ciphertext');
+    const salt = base642buf(parts[0]);
+    const iv = base642buf(parts[1]);
+    const data = base642buf(parts[2]);
+    const key = await deriveKey(passphrase, salt);
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+    const elapsed = (performance.now() - t0).toFixed(2);
+    setOutput('aes-output', new TextDecoder().decode(decrypted));
+    document.getElementById('aes-time').textContent = elapsed;
+  } catch (e) {
+    setOutput('aes-output', 'Decryption failed — wrong passphrase or corrupted data.', true);
+  }
+}
+
+// ========== RSA ==========
+let rsaKeyPair = null;
+
+async function rsaGenerate() {
+  const bits = parseInt(document.getElementById('rsa-bits').value);
+  const t0 = performance.now();
+  rsaKeyPair = await crypto.subtle.generateKey(
+    { name: 'RSA-OAEP', modulusLength: bits, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    true, ['encrypt', 'decrypt']
+  );
+  const elapsed = (performance.now() - t0).toFixed(0);
+  const pubJwk = await crypto.subtle.exportKey('jwk', rsaKeyPair.publicKey);
+  const privJwk = await crypto.subtle.exportKey('jwk', rsaKeyPair.privateKey);
+  document.getElementById('rsa-pub').textContent = JSON.stringify(pubJwk, null, 2).substring(0, 500) + '...';
+  document.getElementById('rsa-priv').textContent = '[Private key generated — ' + bits + '-bit]';
+  document.getElementById('rsa-keygen-time').textContent = elapsed;
+  document.getElementById('rsa-key-size').textContent = bits + '-bit';
+  setOutput('rsa-output', 'Key pair generated. Ready to encrypt.');
+}
+
+async function rsaEncrypt() {
+  if (!rsaKeyPair) return setOutput('rsa-output', 'Generate a key pair first.', true);
+  const plaintext = document.getElementById('rsa-plaintext').value;
+  if (!plaintext) return setOutput('rsa-output', 'Enter text to encrypt.', true);
+  try {
+    const t0 = performance.now();
+    const enc = new TextEncoder();
+    const ciphertext = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, rsaKeyPair.publicKey, enc.encode(plaintext));
+    const elapsed = (performance.now() - t0).toFixed(2);
+    setOutput('rsa-output', buf2base64(ciphertext));
+    document.getElementById('rsa-enc-time').textContent = elapsed;
+  } catch (e) {
+    setOutput('rsa-output', 'Encryption error: ' + e.message + '. RSA can only encrypt small amounts of data.', true);
+  }
+}
+
+async function rsaDecrypt() {
+  if (!rsaKeyPair) return setOutput('rsa-output', 'Generate a key pair first.', true);
+  const ciphertext = document.getElementById('rsa-output').textContent;
+  if (!ciphertext || ciphertext.includes('error') || ciphertext.includes('Generate')) return setOutput('rsa-output', 'Encrypt something first.', true);
+  try {
+    const t0 = performance.now();
+    const data = base642buf(ciphertext);
+    const decrypted = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, rsaKeyPair.privateKey, data);
+    const elapsed = (performance.now() - t0).toFixed(2);
+    setOutput('rsa-output', new TextDecoder().decode(decrypted));
+    document.getElementById('rsa-enc-time').textContent = elapsed;
+  } catch (e) {
+    setOutput('rsa-output', 'Decryption failed.', true);
+  }
+}
+
+// ========== Hashing ==========
+async function hashLive() {
+  const input = document.getElementById('hash-input').value;
+  const salt = document.getElementById('hash-salt').value;
+  const algo = document.getElementById('hash-algo').value;
+  if (!input) return setOutput('hash-output', 'Enter text to hash...');
+  const t0 = performance.now();
+  const enc = new TextEncoder();
+  const data = enc.encode(salt + input);
+  const hashBuf = await crypto.subtle.digest(algo, data);
+  const elapsed = (performance.now() - t0).toFixed(3);
+  const hex = buf2hex(hashBuf);
+  setOutput('hash-output', hex);
+  const bits = hashBuf.byteLength * 8;
+  document.getElementById('hash-bits').textContent = bits;
+  document.getElementById('hash-hex-len').textContent = hex.length;
+  document.getElementById('hash-time').textContent = elapsed;
+  compareHash();
+}
+
+function hashFile() {
+  document.getElementById('hash-file-input').click();
+}
+
+async function hashFileSelected() {
+  const file = document.getElementById('hash-file-input').files[0];
+  if (!file) return;
+  const algo = document.getElementById('hash-algo').value;
+  const t0 = performance.now();
+  const buf = await file.arrayBuffer();
+  const hashBuf = await crypto.subtle.digest(algo, buf);
+  const elapsed = (performance.now() - t0).toFixed(3);
+  const hex = buf2hex(hashBuf);
+  setOutput('hash-output', file.name + ':\n' + hex);
+  document.getElementById('hash-bits').textContent = hashBuf.byteLength * 8;
+  document.getElementById('hash-hex-len').textContent = hex.length;
+  document.getElementById('hash-time').textContent = elapsed;
+}
+
+function compareHash() {
+  const expected = document.getElementById('hash-compare').value.trim().toLowerCase();
+  const current = document.getElementById('hash-output').textContent.trim().toLowerCase();
+  if (!expected) { setOutput('hash-match', 'Enter a hash above to compare...'); return; }
+  if (expected === current) {
+    document.getElementById('hash-match').textContent = 'MATCH — Hashes are identical';
+    document.getElementById('hash-match').style.color = 'var(--success)';
+  } else {
+    document.getElementById('hash-match').textContent = 'NO MATCH — Hashes differ';
+    document.getElementById('hash-match').style.color = 'var(--danger)';
+  }
+}
+
+// ========== HMAC ==========
+async function hmacGenerate() {
+  const msg = document.getElementById('hmac-msg').value;
+  const keyStr = document.getElementById('hmac-key').value;
+  const algo = document.getElementById('hmac-algo').value;
+  if (!msg || !keyStr) return setOutput('hmac-output', 'Enter both message and key.', true);
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(keyStr), { name: 'HMAC', hash: algo }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(msg));
+  setOutput('hmac-output', buf2hex(sig));
+}
+
+async function hmacVerify() {
+  const msg = document.getElementById('hmac-msg').value;
+  const keyStr = document.getElementById('hmac-key').value;
+  const algo = document.getElementById('hmac-algo').value;
+  const expected = document.getElementById('hmac-expected').value.trim();
+  if (!msg || !keyStr || !expected) return setOutput('hmac-verify-result', 'Enter message, key, and expected HMAC.', true);
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(keyStr), { name: 'HMAC', hash: algo }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(msg));
+  const computed = buf2hex(sig);
+  if (computed.toLowerCase() === expected.toLowerCase()) {
+    setOutput('hmac-verify-result', 'VALID — HMAC matches. Message is authentic.');
+    document.getElementById('hmac-verify-result').style.color = 'var(--success)';
+  } else {
+    setOutput('hmac-verify-result', 'INVALID — HMAC does not match. Message may be tampered.');
+    document.getElementById('hmac-verify-result').style.color = 'var(--danger)';
+  }
+}
+
+// ========== Digital Signatures ==========
+let signKeyPair = null;
+
+async function signGenKeys() {
+  signKeyPair = await crypto.subtle.generateKey(
+    { name: 'RSA-PSS', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    true, ['sign', 'verify']
+  );
+  document.getElementById('sign-priv-key').textContent = '[RSA-PSS 2048-bit private key generated]';
+  const pubJwk = await crypto.subtle.exportKey('jwk', signKeyPair.publicKey);
+  document.getElementById('sign-pub-key').textContent = JSON.stringify(pubJwk, null, 2).substring(0, 400) + '...';
+  setOutput('sign-signature', 'Keys ready. Enter a message and click Sign.');
+}
+
+async function signMessage() {
+  if (!signKeyPair) return setOutput('sign-signature', 'Generate keys first.', true);
+  const msg = document.getElementById('sign-message').value;
+  if (!msg) return setOutput('sign-signature', 'Enter a message to sign.', true);
+  const enc = new TextEncoder();
+  const sig = await crypto.subtle.sign({ name: 'RSA-PSS', saltLength: 32 }, signKeyPair.privateKey, enc.encode(msg));
+  setOutput('sign-signature', buf2base64(sig));
+}
+
+async function verifySignature() {
+  if (!signKeyPair) return setOutput('sign-verify-result', 'Generate keys first.', true);
+  const msg = document.getElementById('sign-message').value;
+  const sigB64 = document.getElementById('sign-signature').textContent;
+  if (!msg || !sigB64 || sigB64.includes('error') || sigB64.includes('Generate') || sigB64.includes('Keys ready')) {
+    return setOutput('sign-verify-result', 'Sign a message first.', true);
+  }
+  try {
+    const sig = base642buf(sigB64);
+    const enc = new TextEncoder();
+    const valid = await crypto.subtle.verify({ name: 'RSA-PSS', saltLength: 32 }, signKeyPair.publicKey, sig, enc.encode(msg));
+    if (valid) {
+      setOutput('sign-verify-result', 'SIGNATURE VALID — Message is authentic and untampered.');
+      document.getElementById('sign-verify-result').style.color = 'var(--success)';
+    } else {
+      setOutput('sign-verify-result', 'SIGNATURE INVALID — Message may have been altered.');
+      document.getElementById('sign-verify-result').style.color = 'var(--danger)';
+    }
+  } catch (e) {
+    setOutput('sign-verify-result', 'Verification error: ' + e.message, true);
+  }
+}
+
+// ========== Password Analyzer ==========
+function analyzePassword() {
+  const pw = document.getElementById('pw-input').value;
+  if (!pw) {
+    document.getElementById('pw-bar').style.width = '0%';
+    document.getElementById('pw-label').textContent = 'Enter a password';
+    document.getElementById('pw-score-text').textContent = '—';
+    document.getElementById('pw-entropy').textContent = '0';
+    document.getElementById('pw-charset').textContent = '0';
+    document.getElementById('pw-length').textContent = '0';
+    document.getElementById('pw-crack-online').textContent = '—';
+    document.getElementById('pw-crack-offline').textContent = '—';
+    document.getElementById('pw-patterns').textContent = '—';
+    setOutput('pw-details', 'Enter a password above for detailed analysis...');
+    return;
+  }
+  let charset = 0;
+  const details = [];
+  if (/[a-z]/.test(pw)) { charset += 26; details.push('Lowercase letters (+26)'); }
+  if (/[A-Z]/.test(pw)) { charset += 26; details.push('Uppercase letters (+26)'); }
+  if (/[0-9]/.test(pw)) { charset += 10; details.push('Digits (+10)'); }
+  if (/[^a-zA-Z0-9]/.test(pw)) { charset += 33; details.push('Special characters (+33)'); }
+  const entropy = Math.floor(pw.length * Math.log2(charset || 1));
+  const patterns = [];
+  if (/^[a-zA-Z]+$/.test(pw)) patterns.push('Letters only');
+  if (/^[0-9]+$/.test(pw)) patterns.push('Numbers only');
+  if (/(.)\1{2,}/.test(pw)) patterns.push('Repeated characters');
+  if (/^(123|abc|qwerty|password|admin|letmein)/i.test(pw)) patterns.push('Common pattern');
+  if (/(012|123|234|345|456|567|678|789)/.test(pw)) patterns.push('Sequential digits');
+  if (/(abc|bcd|cde|def|efg|fgh|ghi)/i.test(pw)) patterns.push('Sequential letters');
+  if (pw.length < 8) patterns.push('Too short (<8)');
+  let score, label, color;
+  if (entropy < 28) { score = 10; label = 'Very Weak'; color = 'var(--danger)'; }
+  else if (entropy < 36) { score = 25; label = 'Weak'; color = '#ff6b6b'; }
+  else if (entropy < 60) { score = 50; label = 'Fair'; color = 'var(--warning)'; }
+  else if (entropy < 80) { score = 75; label = 'Strong'; color = '#4ecdc4'; }
+  else { score = 100; label = 'Very Strong'; color = 'var(--success)'; }
+  const bar = document.getElementById('pw-bar');
+  bar.style.width = score + '%';
+  bar.style.background = color;
+  document.getElementById('pw-label').textContent = label;
+  document.getElementById('pw-label').style.color = color;
+  document.getElementById('pw-score-text').textContent = score + '/100';
+  document.getElementById('pw-entropy').textContent = entropy;
+  document.getElementById('pw-charset').textContent = charset;
+  document.getElementById('pw-length').textContent = pw.length;
+  document.getElementById('pw-patterns').textContent = patterns.length || 'None';
+  // Crack time estimates
+  const combos = Math.pow(charset, pw.length);
+  const onlineRate = 100; // 100 attempts/sec
+  const offlineRate = 10e9; // 10 billion/sec (GPU)
+  document.getElementById('pw-crack-online').textContent = formatTime(combos / onlineRate / 2);
+  document.getElementById('pw-crack-offline').textContent = formatTime(combos / offlineRate / 2);
+  const detailText = [
+    'Character Sets: ' + details.join(', '),
+    'Charset Size: ' + charset,
+    'Password Length: ' + pw.length,
+    'Entropy: ' + entropy + ' bits',
+    'Possible Combinations: ' + combos.toExponential(2),
+    '',
+    'Patterns Detected: ' + (patterns.length ? patterns.join(', ') : 'None'),
+    '',
+    'Crack Time Estimates:',
+    '  Online (100/sec): ' + formatTime(combos / onlineRate / 2),
+    '  Offline GPU (10B/sec): ' + formatTime(combos / offlineRate / 2),
+    '',
+    'Recommendations:',
+    pw.length < 12 ? '  - Increase length to at least 12 characters' : '  - Good length',
+    charset < 62 ? '  - Use a mix of uppercase, lowercase, digits, and symbols' : '  - Good character diversity',
+    patterns.length ? '  - Avoid common patterns and sequences' : '  - No common patterns detected'
+  ];
+  setOutput('pw-details', detailText.join('\n'));
+}
+
+function formatTime(seconds) {
+  if (!isFinite(seconds) || seconds > 1e18) return '> heat death';
+  if (seconds < 0.001) return 'instant';
+  if (seconds < 1) return '< 1 second';
+  if (seconds < 60) return Math.floor(seconds) + 's';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
+  if (seconds < 86400 * 365) return Math.floor(seconds / 86400) + ' days';
+  if (seconds < 86400 * 365 * 1000) return Math.floor(seconds / (86400 * 365)) + ' years';
+  if (seconds < 86400 * 365 * 1e6) return Math.floor(seconds / (86400 * 365 * 1000)) + 'K years';
+  if (seconds < 86400 * 365 * 1e9) return Math.floor(seconds / (86400 * 365 * 1e6)) + 'M years';
+  return Math.floor(seconds / (86400 * 365 * 1e9)) + 'B years';
+}
+
+function generatePassword() {
+  const len = parseInt(document.getElementById('gen-len').value);
+  let chars = '';
+  if (document.getElementById('gen-upper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (document.getElementById('gen-lower').checked) chars += 'abcdefghijklmnopqrstuvwxyz';
+  if (document.getElementById('gen-digits').checked) chars += '0123456789';
+  if (document.getElementById('gen-symbols').checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  if (!chars) { setOutput('gen-output', 'Select at least one character set.', true); return; }
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  let pw = '';
+  for (let i = 0; i < len; i++) pw += chars[arr[i] % chars.length];
+  setOutput('gen-output', pw);
+  // Auto-analyze
+  document.getElementById('pw-input').value = pw;
+  analyzePassword();
+}
+
+// ========== Benchmarks ==========
+let benchChart = null;
+
+async function runBenchmarks() {
+  const results = [];
+  const data = new Uint8Array(10000);
+  crypto.getRandomValues(data);
+  const enc = new TextEncoder();
+  // SHA-256
+  let t0 = performance.now();
+  for (let i = 0; i < 1000; i++) await crypto.subtle.digest('SHA-256', data);
+  results.push({ name: 'SHA-256', time: ((performance.now() - t0) / 1000).toFixed(3), ops: Math.floor(1000 / ((performance.now() - t0) / 1000)) });
+  // SHA-512
+  t0 = performance.now();
+  for (let i = 0; i < 1000; i++) await crypto.subtle.digest('SHA-512', data);
+  results.push({ name: 'SHA-512', time: ((performance.now() - t0) / 1000).toFixed(3), ops: Math.floor(1000 / ((performance.now() - t0) / 1000)) });
+  // AES-GCM encrypt
+  const aesKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  t0 = performance.now();
+  for (let i = 0; i < 500; i++) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, data);
+  }
+  results.push({ name: 'AES-256-GCM', time: ((performance.now() - t0) / 500).toFixed(3), ops: Math.floor(500 / ((performance.now() - t0) / 1000)) });
+  // HMAC
+  const hmacKey = await crypto.subtle.generateKey({ name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  t0 = performance.now();
+  for (let i = 0; i < 1000; i++) await crypto.subtle.sign('HMAC', hmacKey, data);
+  results.push({ name: 'HMAC-SHA-256', time: ((performance.now() - t0) / 1000).toFixed(3), ops: Math.floor(1000 / ((performance.now() - t0) / 1000)) });
+  // RSA encrypt (small data)
+  const rsaKey = await crypto.subtle.generateKey(
+    { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    false, ['encrypt', 'decrypt']
+  );
+  const smallData = enc.encode('benchmark test data');
+  t0 = performance.now();
+  for (let i = 0; i < 100; i++) await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, rsaKey.publicKey, smallData);
+  results.push({ name: 'RSA-2048', time: ((performance.now() - t0) / 100).toFixed(3), ops: Math.floor(100 / ((performance.now() - t0) / 1000)) });
+  // PBKDF2
+  const pbkdfKey = await crypto.subtle.importKey('raw', enc.encode('password'), 'PBKDF2', false, ['deriveKey']);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  t0 = performance.now();
+  for (let i = 0; i < 10; i++) {
+    await crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, pbkdfKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+  }
+  results.push({ name: 'PBKDF2 (100K)', time: ((performance.now() - t0) / 10).toFixed(1), ops: Math.floor(10 / ((performance.now() - t0) / 1000)) });
+  // Render chart
+  if (benchChart) benchChart.destroy();
+  const ctx = document.getElementById('bench-chart').getContext('2d');
+  benchChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: results.map(r => r.name),
+      datasets: [{
+        label: 'Avg Time per Operation (ms)',
+        data: results.map(r => parseFloat(r.time)),
+        backgroundColor: ['#3b82f6', '#6366f1', '#64ffda', '#10b981', '#f59e0b', '#ef4444'],
+        borderWidth: 0,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: 'Time (ms)', color: '#8892b0' }, ticks: { color: '#8892b0' }, grid: { color: 'rgba(100,255,218,.05)' } },
+        x: { ticks: { color: '#ccd6f6' }, grid: { display: false } }
+      }
+    }
+  });
+  // Results table
+  let html = '<table class="algo-table"><tr><th>Algorithm</th><th>Avg Time</th><th>Ops/sec</th></tr>';
+  results.forEach(r => { html += `<tr><td>${r.name}</td><td>${r.time} ms</td><td>${r.ops.toLocaleString()}</td></tr>`; });
+  html += '</table>';
+  document.getElementById('bench-results').innerHTML = html;
+}
+
+// ========== Steganography ==========
+function initStegCanvas() {
+  const canvas = document.getElementById('steg-canvas');
+  const ctx = canvas.getContext('2d');
+  // Generate a colorful pattern
+  const imgData = ctx.createImageData(256, 256);
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    const x = (i / 4) % 256;
+    const y = Math.floor(i / 4 / 256);
+    imgData.data[i] = (Math.sin(x * 0.05) * 127 + 128) | 0;
+    imgData.data[i + 1] = (Math.cos(y * 0.03) * 127 + 128) | 0;
+    imgData.data[i + 2] = (Math.sin((x + y) * 0.04) * 127 + 128) | 0;
+    imgData.data[i + 3] = 255;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  const capacity = Math.floor((256 * 256 * 3) / 8) - 4; // Reserve 4 bytes for length
+  document.getElementById('steg-capacity').textContent = capacity.toLocaleString();
+}
+
+function stegEncode() {
+  const msg = document.getElementById('steg-message').value;
+  if (!msg) { setOutput('steg-extracted', 'Enter a message to hide.', true); return; }
+  const canvas = document.getElementById('steg-canvas');
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, 256, 256);
+  const pixels = imgData.data;
+  // Encode message length (32 bits) + message
+  const enc = new TextEncoder();
+  const msgBytes = enc.encode(msg);
+  const lenBytes = new Uint8Array(4);
+  new DataView(lenBytes.buffer).setUint32(0, msgBytes.length);
+  const allBytes = new Uint8Array(4 + msgBytes.length);
+  allBytes.set(lenBytes);
+  allBytes.set(msgBytes, 4);
+  // Check capacity
+  const maxBytes = Math.floor((pixels.length / 4) * 3 / 8);
+  if (allBytes.length > maxBytes) { setOutput('steg-extracted', 'Message too long for this image.', true); return; }
+  // LSB encoding
+  let bitIndex = 0;
+  for (let i = 0; i < allBytes.length; i++) {
+    for (let b = 7; b >= 0; b--) {
+      const bit = (allBytes[i] >> b) & 1;
+      const pixelIdx = Math.floor(bitIndex / 3);
+      const channelIdx = bitIndex % 3;
+      const dataIdx = pixelIdx * 4 + channelIdx;
+      pixels[dataIdx] = (pixels[dataIdx] & 0xFE) | bit;
+      bitIndex++;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  document.getElementById('steg-used').textContent = msgBytes.length;
+  setOutput('steg-extracted', 'Message hidden successfully. Click "Extract" to verify.');
+}
+
+function stegDecode() {
+  const canvas = document.getElementById('steg-canvas');
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, 256, 256);
+  const pixels = imgData.data;
+  // Read message length (first 32 bits)
+  let bitIndex = 0;
+  function readByte() {
+    let byte = 0;
+    for (let b = 7; b >= 0; b--) {
+      const pixelIdx = Math.floor(bitIndex / 3);
+      const channelIdx = bitIndex % 3;
+      const dataIdx = pixelIdx * 4 + channelIdx;
+      byte |= (pixels[dataIdx] & 1) << b;
+      bitIndex++;
+    }
+    return byte;
+  }
+  const lenBytes = new Uint8Array(4);
+  for (let i = 0; i < 4; i++) lenBytes[i] = readByte();
+  const msgLen = new DataView(lenBytes.buffer).getUint32(0);
+  if (msgLen <= 0 || msgLen > 50000) { setOutput('steg-extracted', 'No hidden message found or corrupted data.', true); return; }
+  const msgBytes = new Uint8Array(msgLen);
+  for (let i = 0; i < msgLen; i++) msgBytes[i] = readByte();
+  const dec = new TextDecoder();
+  try {
+    setOutput('steg-extracted', dec.decode(msgBytes));
+  } catch (e) {
+    setOutput('steg-extracted', 'Could not decode hidden data.', true);
+  }
+}
+
+// Initialize
+initStegCanvas();
+</script>
+</body>
+</html>
