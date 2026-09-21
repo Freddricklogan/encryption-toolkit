@@ -1,0 +1,39 @@
+/* Demo-specific styles. Shell tokens come from exec-shell.css. */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
+.tab-button { padding: 8px 12px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); cursor: pointer; font: inherit; font-size: .84rem; font-weight: 600; }
+.tab-button.active { background: var(--accent); color: #06101f; border-color: var(--accent); }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; min-width: 0; margin-bottom: 14px; }
+.panel h2 { margin: 0 0 6px; font-size: 1rem; }
+.panel h3 { margin: 14px 0 8px; font-size: .78rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.lead { margin: 0 0 12px; font-size: .86rem; color: var(--muted); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+@media (max-width: 900px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; min-width: 0; }
+.field label { font-size: .78rem; color: var(--muted); }
+.field input, .field select, .field textarea { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; font: inherit; font-size: .88rem; width: 100%; }
+.field textarea { min-height: 90px; font-family: var(--shell-mono); font-size: .8rem; resize: vertical; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; }
+.btn { padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font: inherit; font-size: .84rem; font-weight: 600; cursor: pointer; }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: #06101f; }
+.output { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; font-family: var(--shell-mono); font-size: .78rem; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 44px; margin: 0; color: var(--text); }
+.output.is-error { border-color: var(--danger); color: var(--danger); }
+.method { font-size: .8rem; color: var(--muted); margin: 8px 0 0; }
+.method code, .lead code { font-family: var(--shell-mono); color: var(--text); }
+dl.hashes { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: .78rem; }
+dl.hashes dt { color: var(--muted); } dl.hashes dd { margin: 0; font-family: var(--shell-mono); overflow-wrap: anywhere; }
+.check { display: flex; align-items: center; gap: 8px; font-size: .84rem; }
+.check-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.meter { height: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+.meter__fill { height: 100%; width: 0; background: var(--danger); transition: width 200ms; }
+.meter__fill[data-score='2'] { background: var(--warn); } .meter__fill[data-score='3'], .meter__fill[data-score='4'] { background: var(--ok); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.stat { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; min-width: 0; }
+.stat .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.stat .value { font-size: .95rem; font-weight: 700; overflow-wrap: anywhere; }
+table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+th { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.steg-canvas { width: 256px; height: 256px; max-width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); image-rendering: pixelated; display: block; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+.lead code, .method code { overflow-wrap: anywhere; }
