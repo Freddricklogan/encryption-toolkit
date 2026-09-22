@@ -1,7 +1,7 @@
 /** Wires the crypto modules to the page. Every operation runs in the browser on Web Crypto; nothing is transmitted. */
 import { exportJwk, generateRsaOaep, generateSigningKeys, rsaDecrypt, rsaEncrypt, rsaMaxPlaintext, sign, verify } from './asymmetric.js';
 import { fromBase64, fromUtf8, toBase64, toHex, utf8 } from './encoding.js';
-import { mountExecShell } from './exec-shell.js';
+import { mountExecShell, tokens } from './exec-shell.js';
 import { digest, digestText, HASHES, hmacSign, hmacVerify } from './hashing.js';
 import { analyze, generatePassword, humanDuration, RATES } from './password.js';
 import { capacityBytes, changedFraction, embedText, extractText } from './steg.js';
@@ -214,8 +214,8 @@ function stegDraw() {
   const c = $('steg-canvas');
   const ctx = c.getContext('2d', { willReadFrequently: true });
   const g = ctx.createLinearGradient(0, 0, 256, 256);
-  g.addColorStop(0, '#1f4e8c');
-  g.addColorStop(1, '#3fb950');
+  g.addColorStop(0, tokens().panel2);
+  g.addColorStop(1, tokens().ok);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 256, 256);
   for (let i = 0; i < 40; i += 1) {
@@ -274,6 +274,8 @@ async function boot() {
   stegDraw();
 
   shell = mountExecShell({
+  theme: 'graphite',
+  accent: 'secondary',
     title: 'Encryption Toolkit',
     tagline: 'Applied cryptography in the browser on Web Crypto: AES-256-GCM envelopes with PBKDF2, AES-KW key wrapping and associated data; RSA-OAEP; SHA-2 and HMAC; RSA-PSS and ECDSA signatures; an unbiased password generator; LSB steganography. Tested against NIST and RFC vectors. Nothing leaves the page.',
     repo: 'https://github.com/Freddricklogan/encryption-toolkit',
